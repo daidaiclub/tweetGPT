@@ -4,7 +4,10 @@ import aiohttp
 from dotenv import load_dotenv
 import os
 
-load_dotenv(dotenv_path='./.env.local')
+try:
+    load_dotenv(dotenv_path='./.env.local')
+except:
+    load_dotenv()
 
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')  # 你的 bot token
 backend_url = os.getenv('BACKEND_URL') # 你的後端 url
