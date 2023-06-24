@@ -5,7 +5,7 @@ FROM python:3.9-slim-buster
 WORKDIR /app
 
 # 將當前目錄的內容複製到工作目錄
-COPY . /app
+COPY app.py worker.py requirements.txt /app
 
 # 安裝所需的套件
 RUN pip install --no-cache-dir -r requirements.txt
@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5000
 
 # 啟動 Flask 應用
-CMD ["python", "app.py"]
+CMD ["flask", "--app", "app", "run"]

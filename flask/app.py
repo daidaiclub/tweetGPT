@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import sqlalchemy
 from flask_sqlalchemy import SQLAlchemy
 from rq import Queue
 from rq.job import Job

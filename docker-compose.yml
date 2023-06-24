@@ -9,5 +9,5 @@ services:
   discord-bot:
     build: ./dcbot  # discord-bot 目錄需要包含 Dockerfile 和 bot 的程式碼
     environment:
-      - DISCORD_BOT_TOKEN=YOUR_DISCORD_BOT_TOKEN
+      - DISCORD_BOT_TOKEN=MTEyMTk5MTYzNzAyMzg2NjkyMA.GSRByX.CDPwDf6LR7hSZVG6w_yhjctg4pdytdOPnBuYZY
       - BACKEND_URL=http://flask-app:5000
