@@ -11,11 +11,7 @@ db = SQLAlchemy(app)
 
 q = Queue(connection=conn)
 
-# 創建一個數據模型
-class Brand(db.Model):
-  channel_id = db.Column(db.Integer(), primary_key=True)
-  brand = db.Column(db.String(120), nullable=False)
-
+# 創建一個數據模型，用來儲存 GPT 分析完的數據
 class Result(db.Model):
   channel_id = db.Column(db.Integer(), primary_key=True)
   result = db.Column(db.String(1200), nullable=False)
