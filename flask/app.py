@@ -51,12 +51,13 @@ def gpt():
   result = Result(channel_id=data['channel_id'], result=data['result'])
   
   # 如果資料庫中已經有這個 channel_id 的數據，就更新它
-  if Result.query.filter_by(channel_id=data['channel_id']).first():
-    Result.query.filter_by(channel_id=data['channel_id']).update({'result': data['result']})
+  existing_result = Result.query.filter_by(channel_id=data['channel_id']).first()
+  if existing_result:
+    existing_result.result = data['result']
   # 否則就新增一筆數據
   else:
     db.session.add(result)
-    db.session.commit()
+  db.session.commit()
 
   return {'message': 'Data saved successfully'}, 200
 
@@ -81,3 +82,4 @@ with app.app_context():
 if __name__ == '__main__':
   db.create_all()
   app.run(debug=True)
+
