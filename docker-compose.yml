@@ -33,12 +33,10 @@ services:
     working_dir: /app
     depends_on:
       - redis
-    command: rq worker
+    command: rq worker --with-scheduler --url redis://redis:6379
     networks:
       - default
-    environment:
-      - REDISTOGO_URL=redis://redis:6379
-
+      
   discord-bot:
     container_name: discord_bot
     build: ./dcbot
