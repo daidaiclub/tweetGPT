@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build: ./flask  # flask-app 目錄需要包含 Dockerfile 和 flask 應用的程式碼
+    ports:
+      - "5000:5000"
+
+  discord-bot:
+    build: ./dcbot  # discord-bot 目錄需要包含 Dockerfile 和 bot 的程式碼
+    environment:
+      - DISCORD_BOT_TOKEN=YOUR_DISCORD_BOT_TOKEN
+      - BACKEND_URL=http://flask-app:5000
