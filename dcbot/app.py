@@ -43,7 +43,7 @@ class MyBot(discord.Client):
                 if response.status == 200 and data:
                     for item in data:
                         channel = self.get_channel(item['channel_id'])  # 你的頻道 ID
-                        await channel.send(item['message'])
+                        await channel.send(item['result'])
             await asyncio.sleep(500)  # 等待 5 秒
 
     async def close(self):
