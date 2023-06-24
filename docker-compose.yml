@@ -2,12 +2,63 @@ version: '3.8'
 
 services:
   flask-app:
-    build: ./flask  # flask-app 目錄需要包含 Dockerfile 和 flask 應用的程式碼
+    container_name: flask_app
+    build: ./flask
+    volumes:
+      - ./flask:/app
+      - db-data:/var/lib/sqlite
+    working_dir: /app
+    depends_on:
+      - redis
+    command: flask run --host=0.0.0.0 --port=5000
     ports:
       - "5000:5000"
+    networks:
+      - default
+    environment:
+      - REDISTOGO_URL=redis://redis:6379
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    networks:
+      - default
+
+  rq:
+    container_name: rq
+    build: ./flask
+    volumes:
+      - ./flask:/app
+      - db-data:/var/lib/sqlite
+    working_dir: /app
+    depends_on:
+      - redis
+    command: rq worker
+    networks:
+      - default
+    environment:
+      - REDISTOGO_URL=redis://redis:6379
 
   discord-bot:
-    build: ./dcbot  # discord-bot 目錄需要包含 Dockerfile 和 bot 的程式碼
+    container_name: discord_bot
+    build: ./dcbot
+    volumes:
+      - ./dcbot:/app
+    working_dir: /app
+    command: python app.py
+    depends_on:
+      - flask-app
+    env_file:
+      - .env
     environment:
-      - DISCORD_BOT_TOKEN=MTEyMTk5MTYzNzAyMzg2NjkyMA.GSRByX.CDPwDf6LR7hSZVG6w_yhjctg4pdytdOPnBuYZY
-      - BACKEND_URL=http://flask-app:5000
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+      - BACKEND_URL=http://flask-app:5000/
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  db-data:
