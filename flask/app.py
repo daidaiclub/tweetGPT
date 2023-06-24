@@ -1,16 +1,15 @@
 from flask import Flask, request, jsonify
-import sqlalchemy
 from flask_sqlalchemy import SQLAlchemy
 from rq import Queue
 from rq.job import Job
 from worker import conn
-import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'  # 將這個路徑改為你的 sqlite3 資料庫的路徑
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////var/lib/sqlite/test.db'  # 將這個路徑改為你的 sqlite3 資料庫的路徑
 db = SQLAlchemy(app)
 
 q = Queue(connection=conn)
+jobs = []
 
 # 創建一個數據模型，用來儲存 GPT 分析完的數據
 class Result(db.Model):
@@ -28,22 +27,21 @@ def brand():
   data = request.get_json()
 
   # 使用品牌名稱調用 Twitter API 獲取 tweet 數據，並將它加入工作佇列
-  job = q.enqueue_call(
-    func=get_tweets, args=(data['brand'], data['channel_id']), result_ttl=5000
-  )
+  job = q.enqueue(get_tweets, data['brand'], data['channel_id'])
+  jobs.append(job.get_id())
   
   return {'job_id': job.get_id()}, 202
 
 @app.route('/queue', methods=['GET'])
 def queue():
   # 獲取工作佇列的內容
-  jobs = q.get_jobs()
-  results = [Job.fetch(job.get_id(), connection=conn).result for job in jobs]
-  
-  # 清空佇列
-  for job in jobs:
-    job.delete()
-  
+  results = []
+  for job_id in jobs:
+    job = Job.fetch(job_id, connection=conn)
+    if job.is_finished:
+      jobs.remove(job_id)
+      results.append(job.result)
+
   return jsonify(results)
 
 @app.route('/gpt', methods=['POST'])
@@ -51,8 +49,14 @@ def gpt():
   # 紀錄 GPT 分析完的數據
   data = request.get_json()
   result = Result(channel_id=data['channel_id'], result=data['result'])
-  db.session.add(result)
-  db.session.commit()
+  
+  # 如果資料庫中已經有這個 channel_id 的數據，就更新它
+  if Result.query.filter_by(channel_id=data['channel_id']).first():
+    Result.query.filter_by(channel_id=data['channel_id']).update({'result': data['result']})
+  # 否則就新增一筆數據
+  else:
+    db.session.add(result)
+    db.session.commit()
 
   return {'message': 'Data saved successfully'}, 200
 
@@ -66,6 +70,10 @@ def results():
   for result in results:
     db.session.delete(result)
   return jsonify(data)
+
+# 創建資料庫
+with app.app_context():
+  db.create_all()
 
 if __name__ == '__main__':
   db.create_all()
