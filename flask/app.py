@@ -66,9 +66,12 @@ def results():
   results = Result.query.all()
   data = [{'channel_id': result.channel_id, 'result': result.result} for result in results]
 
-  # 清空資料庫
+  # TODO: 清空資料庫
   for result in results:
     db.session.delete(result)
+
+  db.session.commit()
+
   return jsonify(data)
 
 # 創建資料庫
