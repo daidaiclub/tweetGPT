@@ -27,7 +27,7 @@ class MyBot(discord.Client):
             msg = message.content[len('!set'):].strip()
             print()
             # 傳送資訊到後端
-            async with self.session.post(backend_url, json={'brand': msg, 'channel_id': message.channel.channel_id}) as response:
+            async with self.session.post(backend_url + '/brand', json={'brand': msg, 'channel_id': message.channel.channel_id}) as response:
                 if response.status == 200:
                     await message.channel.send('已紀錄品牌名稱，當有新的策略時會通知您。')
                 else:
@@ -37,7 +37,7 @@ class MyBot(discord.Client):
         await self.wait_until_ready()
         while not self.is_closed():
             print('Checking new data...')
-            async with self.session.get(backend_url) as response:
+            async with self.session.get(backend_url + '/results') as response:
                 data = await response.json()
                 print(response.status, data)
                 if response.status == 200 and data:
