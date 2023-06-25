@@ -5,6 +5,7 @@ from rq.job import Job
 from rq_scheduler import Scheduler
 from worker import conn
 from datetime import datetime
+from data import NETFLIX, NVIDIA
 import os
 
 if os.getenv('FLASK_ENV') == 'production':
@@ -34,12 +35,17 @@ class Tweet(db.Model):
 
 def get_prompt(brand, channel_id):
   # 取得所有tweet，並將它們組合成一個 prompt
-  tweets = Tweet.query.filter_by(brand=brand).all()
+  # tweets = Tweet.query.filter_by(brand=brand).all()
+  if brand == 'Netflix':
+    tweets = NETFLIX
+  elif brand == 'NVIDIA':
+    tweets = NVIDIA
+
   contents = ''
   for tweet in tweets:
     contents += tweet.content + '\n\n'
-  Tweet.query.filter_by(brand=brand).delete()
-  db.session.commit()
+  # Tweet.query.filter_by(brand=brand).delete()
+  # db.session.commit()
   if contents == '':
     contents = '無資料'
   prompt = f'''請根據以下文章及品牌，從中判斷該品牌最應該採取的行動，並用繁體中文簡短輸出建議行動
