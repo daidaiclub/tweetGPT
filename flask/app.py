@@ -16,10 +16,52 @@ class Result(db.Model):
   channel_id = db.Column(db.Integer(), primary_key=True)
   result = db.Column(db.String(1200), nullable=False)
 
-def get_tweets(brand, channel_id):
-  # TODO: 使用品牌名稱調用 Twitter API 獲取 tweet 數據
-  # 儲存或處理數據的邏輯實現，在這裡寫好 prompt
-  return {'prompt': '這是一個 prompt', 'channel_id': channel_id}
+class Tweet(db.Model):
+  tweet_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+  content = db.Column(db.String(1200), nullable=False)
+  brand = db.Column(db.String(1200), nullable=False)
+
+def get_prompt(brand, channel_id):
+  # 取得所有tweet，並將它們組合成一個 prompt
+  tweets = Tweet.query.filter_by(brand=brand).all()
+  contents = ''
+  for tweet in tweets:
+    contents += tweet.content + '\n\n'
+  Tweet.query.filter_by(brand=brand).delete()
+  db.session.commit()
+  if contents == '':
+    contents = '無資料'
+  prompt = f'''請根據以下文章及品牌，從中判斷該品牌最應該採取的行動，並用繁體中文簡短輸出建議行動
+
+==========
+資料如下
+品牌：
+{brand}
+
+文章：
+{contents}'''
+  return {'prompt': prompt, 'channel_id': channel_id}
+
+@app.route('/fake_tweets', methods=['POST'])
+def fake_tweet():
+  # 保存 channel_id 和 假的 tweet 數據到資料庫
+  datas = request.get_json()
+  for data in datas:
+    tweet = Tweet(content=data['content'], brand=data['brand'])
+    db.session.add(tweet)
+  db.session.commit()
+  return {'message': 'Data saved successfully'}, 200
+
+@app.route('/tweets', methods=['GET'])
+def tweets():
+  # 獲取資料庫中的所有 tweet
+  tweets = Tweet.query.all()
+  data = [{'tweet_id': tweet.tweet_id, 'content': tweet.content, 'brand': tweet.brand} for tweet in tweets]
+  return jsonify(data)
+
+@app.route('/test_get_prompt/<string:brand>/<int:channel_id>', methods=['GET'])
+def test_get_prompt(brand, channel_id):
+  return get_prompt(brand, channel_id)
 
 @app.route('/brand', methods=['POST'])
 def brand():
@@ -27,7 +69,7 @@ def brand():
   data = request.get_json()
 
   # 使用品牌名稱調用 Twitter API 獲取 tweet 數據，並將它加入工作佇列
-  job = q.enqueue(get_tweets, data['brand'], data['channel_id'])
+  job = q.enqueue(get_prompt, data['brand'], data['channel_id'])
   jobs.append(job.get_id())
   
   return {'job_id': job.get_id()}, 202
