@@ -22,26 +22,23 @@ class MyBot(discord.Client):
         if message.content.startswith('!set'):
             # 擷取訊息
             msg = message.content[len('!set'):].strip()
-            print()
             # 傳送資訊到後端
             async with self.session.post(backend_url + '/brand', json={'brand': msg, 'channel_id': message.channel.id}) as response:
                 if response.status == 202:
-                    await message.channel.send('已紀錄品牌名稱，當有新的策略時會通知您。')
+                    await message.channel.send(f'已及時監控 **{msg}** ，當有新的策略時會通知您。')
                 else:
-                    await message.channel.send('紀錄品牌名稱失敗，請稍後再試。')
+                    await message.channel.send(f'監控 {msg} 失敗，請稍後再試。')
 
     async def background_task(self):
         await self.wait_until_ready()
         while not self.is_closed():
-            print('Checking new data...')
             async with self.session.get(backend_url + '/results') as response:
                 data = await response.json()
-                print(response.status, data)
                 if response.status == 200 and data:
                     for item in data:
-                        channel = self.get_channel(item['channel_id'])  # 你的頻道 ID
-                        await channel.send(item['result'])
-            await asyncio.sleep(500)  # 等待 5 秒
+                        channel = self.get_channel(item['channel_id'])
+                        await channel.send('監控到品牌，新策略如下：\n' + item['result'])
+            await asyncio.sleep(5)  # 等待 5 秒
 
     async def close(self):
         await self.session.close()
