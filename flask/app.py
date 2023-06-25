@@ -42,23 +42,29 @@ def queue():
       jobs.remove(job_id)
       results.append(job.result)
 
-  return {
-    'data': jsonify(results)
-  }
+  return jsonify({
+    'data': results
+  })
 
 @app.route('/gpt', methods=['POST'])
 def gpt():
   # 紀錄 GPT 分析完的數據
   data = request.get_json()
-  result = Result(channel_id=data['channel_id'], result=data['result'])
+
+  for item in data:
+    channel_id = item['channel_id']
+    result = item['result']
   
-  # 如果資料庫中已經有這個 channel_id 的數據，就更新它
-  existing_result = Result.query.filter_by(channel_id=data['channel_id']).first()
-  if existing_result:
-    existing_result.result = data['result']
-  # 否則就新增一筆數據
-  else:
-    db.session.add(result)
+    result_obj = Result(channel_id=channel_id, result=result)
+  
+    # 如果資料庫中已經有這個 channel_id 的數據，就更新它
+    existing_result = Result.query.filter_by(channel_id=channel_id).first()
+    if existing_result:
+      existing_result.result = result
+    # 否則就新增一筆數據
+    else:
+      db.session.add(result_obj)
+  
   db.session.commit()
 
   return {'message': 'Data saved successfully'}, 200
@@ -84,4 +90,5 @@ with app.app_context():
 if __name__ == '__main__':
   db.create_all()
   app.run(debug=True)
+
 
