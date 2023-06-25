@@ -36,8 +36,10 @@ class MyBot(discord.Client):
                 data = await response.json()
                 if response.status == 200 and data:
                     for item in data:
-                        channel = self.get_channel(item['channel_id'])
-                        await channel.send('監控到品牌，新策略如下：\n' + item['result'])
+                      channel = self.get_channel(item['channel_id'])
+                      if channel:
+                          await channel.send('監控到品牌，新策略如下：\n' + item['result'])
+
             await asyncio.sleep(5)  # 等待 5 秒
 
     async def close(self):
