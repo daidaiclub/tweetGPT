@@ -67,7 +67,7 @@ def results():
   results = Result.query.all()
   data = [{'channel_id': result.channel_id, 'result': result.result} for result in results]
 
-  # TODO: 清空資料庫
+  # 清空資料庫
   for result in results:
     db.session.delete(result)
 
