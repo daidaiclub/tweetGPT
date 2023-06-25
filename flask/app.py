@@ -43,7 +43,7 @@ def get_prompt(brand, channel_id):
 
   contents = ''
   for tweet in tweets:
-    contents += tweet.content + '\n\n'
+    contents += tweet['content'] + '\n\n'
   # Tweet.query.filter_by(brand=brand).delete()
   # db.session.commit()
   if contents == '':
