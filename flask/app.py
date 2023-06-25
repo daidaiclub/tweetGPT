@@ -34,21 +34,16 @@ class Tweet(db.Model):
   brand = db.Column(db.String(1200), nullable=False)
 
 def get_prompt(brand, channel_id):
-  # 取得所有tweet，並將它們組合成一個 prompt
-  # tweets = Tweet.query.filter_by(brand=brand).all()
-  if brand == 'Netflix':
-    tweets = NETFLIX
-  elif brand == 'NVIDIA':
-    tweets = NVIDIA
-
-  contents = ''
-  for tweet in tweets:
-    contents += tweet['content'] + '\n\n'
-  # Tweet.query.filter_by(brand=brand).delete()
-  # db.session.commit()
-  if contents == '':
-    contents = '無資料'
-  prompt = f'''請根據以下文章及品牌，從中判斷該品牌最應該採取的行動，並用繁體中文簡短輸出建議行動
+  with app.app_context():
+    tweets = Tweet.query.filter_by(brand=brand).all()
+    contents = ''
+    for tweet in tweets:
+      contents += tweet.content + '\n\n'
+    Tweet.query.filter_by(brand=brand).delete()
+    db.session.commit()
+    if contents == '':
+      contents = '無資料'
+    prompt = f'''請根據以下文章及品牌，從中判斷該品牌最應該採取的行動，並用繁體中文簡短輸出建議行動
 
 ==========
 資料如下
@@ -57,7 +52,7 @@ def get_prompt(brand, channel_id):
 
 文章：
 {contents}'''
-  return {'prompt': prompt, 'channel_id': channel_id}
+    return {'prompt': prompt, 'channel_id': channel_id}
 
 @app.route('/fake_tweets', methods=['POST'])
 def fake_tweet():
