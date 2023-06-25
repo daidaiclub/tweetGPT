@@ -25,7 +25,7 @@ class MyBot(discord.Client):
             # 傳送資訊到後端
             async with self.session.post(backend_url + '/brand', json={'brand': msg, 'channel_id': message.channel.id}) as response:
                 if response.status == 202:
-                    await message.channel.send(f'已及時監控 **{msg}** ，當有新的策略時會通知您。')
+                    await message.channel.send(f'已持續監控 **{msg}** ，當有新的策略時會通知您。')
                 else:
                     await message.channel.send(f'監控 {msg} 失敗，請稍後再試。')
 

@@ -73,7 +73,9 @@ def results():
 
   db.session.commit()
 
-  return jsonify(data)
+  return {
+    "data": jsonify(data)
+  }
 
 # 創建資料庫
 with app.app_context():
