@@ -42,7 +42,9 @@ def queue():
       jobs.remove(job_id)
       results.append(job.result)
 
-  return jsonify(results)
+  return {
+    'data': jsonify(results)
+  }
 
 @app.route('/gpt', methods=['POST'])
 def gpt():
@@ -73,9 +75,7 @@ def results():
 
   db.session.commit()
 
-  return {
-    "data": jsonify(data)
-  }
+  return jsonify(data)
 
 # 創建資料庫
 with app.app_context():
