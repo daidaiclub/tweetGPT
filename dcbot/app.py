@@ -25,7 +25,7 @@ class MyBot(discord.Client):
             # 傳送資訊到後端
             async with self.session.post(backend_url + '/brand', json={'brand': msg, 'channel_id': message.channel.id}) as response:
                 if response.status == 202:
-                    await message.channel.send(f'已持續監控 **{msg}** ，當有新的策略時會通知您。')
+                    await message.channel.send(f'已實時監控 **{msg}** ，當有新的策略時會通知您。')
                 else:
                     await message.channel.send(f'監控 {msg} 失敗，請稍後再試。')
 
@@ -36,9 +36,11 @@ class MyBot(discord.Client):
                 data = await response.json()
                 if response.status == 200 and data:
                     for item in data:
-                        channel = self.get_channel(item['channel_id'])
-                        await channel.send('監控到品牌，新策略如下：\n' + item['result'])
-            await asyncio.sleep(5)  # 等待 5 秒
+                      channel = self.get_channel(item['channel_id'])
+                      if channel:
+                          await channel.send('監控到品牌，新策略如下：\n' + item['result'])
+
+            await asyncio.sleep(30)  # 等待 30 秒
 
     async def close(self):
         await self.session.close()

@@ -17,6 +17,7 @@ services:
       - default
     environment:
       - REDISTOGO_URL=redis://redis:6379
+      - FLASK_ENV=production
 
   redis:
     container_name: redis
@@ -34,6 +35,19 @@ services:
     depends_on:
       - redis
     command: rq worker --with-scheduler --url redis://redis:6379
+    networks:
+      - default
+  
+  rqscheduler:
+    container_name: rq_scheduler
+    build: ./flask
+    volumes:
+      - ./flask:/app
+      - db-data:/var/lib/sqlite
+    working_dir: /app
+    depends_on:
+      - redis
+    command: rq scheduler --url redis://redis:6379
     networks:
       - default
       
