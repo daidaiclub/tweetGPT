@@ -36,6 +36,7 @@ class Tweet(db.Model):
 def get_prompt(brand, channel_id):
   # 取得所有tweet，並將它們組合成一個 prompt
   # tweets = Tweet.query.filter_by(brand=brand).all()
+  tweets = []
   if brand == 'Netflix':
     tweets = NETFLIX
   elif brand == 'NVIDIA':
