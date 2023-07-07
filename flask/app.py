@@ -52,7 +52,7 @@ def get_prompt(brand, channel_id):
 
 文章：
 {contents}'''
-    return {'prompt': prompt, 'channel_id': channel_id}
+    return {'prompt': prompt, 'channel_id': str(channel_id)}
 
 @app.route('/fake_tweets', methods=['POST'])
 def fake_tweet():

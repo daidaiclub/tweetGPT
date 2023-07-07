@@ -10,7 +10,7 @@ services:
     working_dir: /app
     depends_on:
       - redis
-    command: flask run --host=0.0.0.0 --port=5000
+    command: flask run --debug --host=0.0.0.0 --port=5000
     ports:
       - "80:5000"
     networks:
@@ -50,7 +50,7 @@ services:
     working_dir: /app
     depends_on:
       - redis
-    command: rqscheduler --url redis://redis:6379
+    command: rqscheduler --url redis://redis:6379 -i 1 -v
     networks:
       - default
     environment:
@@ -63,11 +63,9 @@ services:
     volumes:
       - ./dcbot:/app
     working_dir: /app
-    command: python app.py
+    command: python3 app.py
     depends_on:
       - flask-app
-    env_file:
-      - .env
     environment:
       - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
       - BACKEND_URL=http://flask-app:5000/
